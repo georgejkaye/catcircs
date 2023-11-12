@@ -33,5 +33,4 @@ let rec enumerate_input_lists = function
 | w ->
     let smaller = enumerate_input_lists (w - 1) in
     print_endline (string_of_value_list_list smaller);
-    List.concat
-      (List.map (prepend_value_to_elements smaller) value_list)
+    List.concat_map (prepend_value_to_elements smaller) value_list
