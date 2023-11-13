@@ -1,12 +1,18 @@
 type value = Bottom | False | True | Top
 
-let value_to_string = function
+type signal = {
+  values: value list
+}
+
+let string_of_value = function
   | Bottom -> "⊥"
   | False -> "f"
   | True -> "t"
   | Top -> "⊤"
 
-let list_to_string element_to_string ?(delim = ", ") xs =
+let string_of_list
+  element_to_string ?(delim = ", ") ?(opening = "[") ?(closing = "]") xs
+=
   List.fold_left (
     fun (acc, i) -> fun cur ->
       let cur_string = element_to_string cur in
@@ -16,21 +22,32 @@ let list_to_string element_to_string ?(delim = ", ") xs =
       (new_string, i+1)
     )
     ("", 0) xs
-  |> fst
+  |> fst |> fun s -> opening ^ s ^ closing
 
-let string_of_value_list = list_to_string value_to_string ~delim:""
+let string_of_signal s =
+  if (List.length s.values) == 0
+  then "ε"
+  else string_of_list string_of_value ~delim:"" ~opening:"" ~closing:"" s.values
 
-let string_of_value_list_list = list_to_string
-  (fun vs -> if (List.length vs) == 0 then "ε" else string_of_value_list vs)
+
+let string_of_signal_list = string_of_list string_of_signal ~delim:", "
 
 let value_list = [Bottom; False; True; Top]
 
 let prepend_value_to_elements vss value_to_append =
-    List.map (fun vs -> value_to_append :: vs ) vss
+    List.map (fun vs -> { values = value_to_append :: vs.values } ) vss
 
-let rec enumerate_input_lists = function
-| 0 -> [[]]
+let rec enumerate_signals = function
+| 0 -> [{ values=[] }]
 | w ->
-    let smaller = enumerate_input_lists (w - 1) in
-    print_endline (string_of_value_list_list smaller);
+    let smaller = enumerate_signals (w - 1) in
     List.concat_map (prepend_value_to_elements smaller) value_list
+
+let rec enumerate_combinations = function
+  | [] -> [[]]
+  | xs :: yss ->
+      let smaller = enumerate_combinations yss in
+      List.concat_map ( fun x -> List.map (fun ys -> x :: ys ) smaller) xs
+
+let enumerate_inputs wss =
+  List.map enumerate_signals wss |> enumerate_combinations
