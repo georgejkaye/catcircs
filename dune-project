@@ -21,6 +21,10 @@
  (description "Helpful tools for working with categorical circuits")
  (depends ocaml dune)
  (tags
-  ("digital circuits" "category theory" "monoidal categories" "mealy machines" "stream functions")))
+  ("digital circuits"
+   "category theory"
+   "monoidal categories"
+   "mealy machines"
+   "stream functions")))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
