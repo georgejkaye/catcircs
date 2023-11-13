@@ -56,11 +56,11 @@ let make_circuit_values fn ar coar =
 
 let make_circuit_signals fn ar coar = { fn; arity = ar; coarity = coar }
 
+type io_cmp = { input : signal list; lhs : signal list; rhs : signal list }
+
 let compare c1 c2 =
   enumerate_inputs c1.arity
   |> List.map (fun ss ->
          let lhs = c1.fn ss in
          let rhs = c2.fn ss in
-         print_endline
-           (string_of_signal_list ss ^ " | " ^ string_of_signal_list lhs ^ " | "
-          ^ string_of_signal_list rhs))
+         { input = ss; lhs; rhs })
