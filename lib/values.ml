@@ -7,6 +7,12 @@ let string_of_value = function
   | True -> "t"
   | Top -> "⊤"
 
+let string_of_boolsq_value = function
+  | Bottom -> "00"
+  | False -> "01"
+  | True -> "10"
+  | Top -> "11"
+
 let string_of_list element_to_string ?(delim = ", ") ?(opening = "[")
     ?(closing = "]") xs =
   List.fold_left
@@ -19,6 +25,8 @@ let string_of_list element_to_string ?(delim = ", ") ?(opening = "[")
     ("", 0) xs
   |> fst
   |> fun s -> opening ^ s ^ closing
+
+let string_of_value_list = string_of_list string_of_value
 
 let string_of_signal s =
   if List.length s.values == 0 then "ε"
