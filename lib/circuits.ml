@@ -1,4 +1,5 @@
 open Values
+open Printer
 
 let fork v = (v, v)
 

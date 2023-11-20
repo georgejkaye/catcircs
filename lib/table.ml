@@ -1,5 +1,6 @@
 open Values
 open Circuits
+open Printer
 
 type 'a row = 'a list * 'a list
 type 'a table = { inputs : int; outputs : int; table : 'a row list }

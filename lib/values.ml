@@ -1,3 +1,5 @@
+open Printer
+
 type value = Bottom | False | True | Top
 type signal = { values : value list }
 
@@ -12,19 +14,6 @@ let string_of_boolsq_value = function
   | False -> "01"
   | True -> "10"
   | Top -> "11"
-
-let string_of_list element_to_string ?(delim = ", ") ?(opening = "[")
-    ?(closing = "]") xs =
-  List.fold_left
-    (fun (acc, i) cur ->
-      let cur_string = element_to_string cur in
-      let new_string =
-        if i == 0 then cur_string else acc ^ delim ^ cur_string
-      in
-      (new_string, i + 1))
-    ("", 0) xs
-  |> fst
-  |> fun s -> opening ^ s ^ closing
 
 let string_of_value_list = string_of_list string_of_value
 
