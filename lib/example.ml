@@ -1,4 +1,5 @@
 open Circuits
+open Belnap
 
 let de_morgan_and_lhs vs =
   (fun xs -> (List.nth xs 0, List.nth xs 1)) vs

@@ -1,43 +1,5 @@
-open Values
+open Belnap
 open Printer
-
-let fork v = (v, v)
-
-let join_fn = function
-  | Bottom, w -> w
-  | v, Bottom -> v
-  | Top, _ -> Top
-  | _, Top -> Top
-  | True, False -> Top
-  | False, True -> Top
-  | True, True -> True
-  | False, False -> False
-
-let and_fn = function
-  | False, _ -> False
-  | _, False -> False
-  | True, w -> w
-  | v, True -> v
-  | Bottom, Bottom -> Bottom
-  | Bottom, Top -> False
-  | Top, Bottom -> False
-  | Top, Top -> Top
-
-let or_fn = function
-  | True, _ -> True
-  | _, True -> True
-  | False, w -> w
-  | v, False -> v
-  | Bottom, Bottom -> Bottom
-  | Bottom, Top -> True
-  | Top, Bottom -> True
-  | Top, Top -> Top
-
-let not_fn = function
-  | Bottom -> Bottom
-  | True -> False
-  | False -> True
-  | Top -> Top
 
 let pair (op1, op2) (x, y) = (op1 x, op2 y)
 
@@ -64,11 +26,11 @@ let make_circuit_signals fn ar coar = { fn; arity = ar; coarity = coar }
 type io_cmp = { input : signal list; lhs : signal list; rhs : signal list }
 
 let string_of_io io =
-  Values.string_of_signal_list io.input
+  Belnap.string_of_signal_list io.input
   ^ " || "
-  ^ Values.string_of_signal_list io.lhs
+  ^ Belnap.string_of_signal_list io.lhs
   ^ " | "
-  ^ Values.string_of_signal_list io.rhs
+  ^ Belnap.string_of_signal_list io.rhs
   ^ if io.lhs = io.rhs then "  O" else "  X "
 
 let string_of_io_cmp_list =
