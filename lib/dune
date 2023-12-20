@@ -1,3 +1,4 @@
 (library
  (public_name catcircs)
- (name catcircs))
+ (name catcircs)
+ (libraries core))

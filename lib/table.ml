@@ -1,26 +1,38 @@
 open Printer
+open Values
 
 type 'a row = 'a array * 'a array
-type 'a tablemany = { inputs : int; outputs : int; table : 'a row array }
+type 'a tablemany = { inputs : int; outputs : int; tablem : 'a row array }
 type 'a tableone = { inputs : int; table : ('a array * 'a) array }
 
-let string_of_row_segment fn =
-  string_of_array fn ~delim:" " ~opening:"" ~closing:""
+module type VTable = sig
+  type v
 
-let string_of_row fn (inputs, outputs) =
-  string_of_row_segment fn inputs ^ " | " ^ string_of_row_segment fn outputs
+  val string_of_row : v row -> string
+  val string_of_table : v tablemany -> string
+end
 
-let string_of_table fn (t : 'a tablemany) =
-  Array.fold_left
-    (fun (i, acc) cur ->
-      let str = string_of_row fn cur in
-      if i == 0 then (1, str) else (i + 1, acc ^ "\n" ^ str))
-    (0, "") t.table
-  |> snd
+module ExtendVTable (V : V) : VTable with type v := V.v = struct
+  let string_of_row_segment =
+    string_of_array V.string_of_value ~delim:" " ~opening:"" ~closing:""
+
+  let string_of_row (inputs, outputs) =
+    string_of_row_segment inputs ^ " | " ^ string_of_row_segment outputs
+
+  let string_of_table t =
+    let _, str =
+      Array.fold_left
+        (fun (i, acc) cur ->
+          let str = string_of_row cur in
+          if i == 0 then (1, str) else (i + 1, acc ^ "\n" ^ str))
+        (0, "") t.tablem
+    in
+    str
+end
 
 let table_to_many_to_table_to_one (t : 'a tablemany) k =
   let rows =
-    Array.map (fun (inputs, outputs) -> (inputs, outputs.(k))) t.table
+    Array.map (fun (inputs, outputs) -> (inputs, outputs.(k))) t.tablem
   in
   { inputs = t.inputs; table = rows }
 

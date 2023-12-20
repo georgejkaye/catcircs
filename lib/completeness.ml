@@ -1,13 +1,10 @@
 open Belnap
 open Table
 
-let string_of_belnap_table = string_of_table string_of_value
-let string_of_boolsq_table = string_of_table string_of_boolsq_value
-
 let get_dnf_clause to_bool conj conj_init row vs =
   Array.fold_left
     (fun (i, acc) cur ->
-      let conjed = if to_bool cur then conj (acc, vs.(i)) else acc in
+      let conjed = if to_bool cur then conj acc vs.(i) else acc in
       (i + 1, conjed))
     (0, conj_init) row
   |> snd
@@ -17,11 +14,11 @@ let get_dnf to_bool disj disj_init conj conj_init rows vs =
     (fun acc (inputs, output) ->
       if to_bool output then
         let clause = get_dnf_clause to_bool conj conj_init inputs vs in
-        disj (acc, clause)
+        disj acc clause
       else acc)
     disj_init rows
 
-let left_zero v = and_fn (Bottom, v)
+let left_zero v = and_fn Bottom v
 
 let left_bool = function
   | Bottom -> false
@@ -35,7 +32,7 @@ let belnap_to_left = function
   | False -> Bottom
   | Top -> True
 
-let right_zero v = or_fn (Bottom, v)
+let right_zero v = or_fn Bottom v
 
 let right_bool = function
   | Bottom -> false
@@ -107,7 +104,7 @@ let table_to_one_to_function (t : 'a tableone) =
     let left_component = left_dnf left_inputs in
     let right_inputs = right_explode_inputs vs in
     let right_component = right_dnf right_inputs in
-    join_fn (left_component, right_component)
+    join_fn left_component right_component
 
 let table_to_many_to_function t =
   let one_tables = table_to_many_to_tables_to_one t in

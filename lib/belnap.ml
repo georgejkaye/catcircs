@@ -1,33 +1,35 @@
-open Printer
+open Values
 
-type value = Bottom | False | True | Top
+type belnap = Bottom | False | True | Top
 
-let value_list = [ Bottom; False; True; Top ]
+module Belnap : V = struct
+  type v = belnap
 
-type signal = { values : value list }
+  let string_of_value = function
+    | Bottom -> "⊥"
+    | False -> "f"
+    | True -> "t"
+    | Top -> "⊤"
 
-let string_of_value = function
-  | Bottom -> "⊥"
-  | False -> "f"
-  | True -> "t"
-  | Top -> "⊤"
+  let values = [ Bottom; False; True; Top ]
+end
 
-let string_of_boolsq_value = function
+(* let belnap_values =
+   List.fold_left
+     (fun acc cur -> Set.add cur acc)
+     BelnapSet.empty
+     [ Bottom; False; True; Top ] *)
+
+let string_of_belnap_bools = function
   | Bottom -> "00"
   | False -> "01"
   | True -> "10"
   | Top -> "11"
 
-let string_of_value_list = string_of_list string_of_value
-
-let string_of_signal s =
-  if List.length s.values == 0 then "ε"
-  else string_of_list string_of_value ~delim:"" ~opening:"" ~closing:"" s.values
-
-let string_of_signal_list = string_of_list string_of_signal ~delim:", "
 let fork v = (v, v)
 
-let join_fn = function
+let join_fn x y =
+  match (x, y) with
   | Bottom, w -> w
   | v, Bottom -> v
   | Top, _ -> Top
@@ -37,7 +39,8 @@ let join_fn = function
   | True, True -> True
   | False, False -> False
 
-let and_fn = function
+let and_fn x y =
+  match (x, y) with
   | False, _ -> False
   | _, False -> False
   | True, w -> w
@@ -47,7 +50,8 @@ let and_fn = function
   | Top, Bottom -> False
   | Top, Top -> Top
 
-let or_fn = function
+let or_fn x y =
+  match (x, y) with
   | True, _ -> True
   | _, True -> True
   | False, w -> w
@@ -62,21 +66,3 @@ let not_fn = function
   | True -> False
   | False -> True
   | Top -> Top
-
-let prepend_value_to_elements vss value_to_append =
-  List.map (fun vs -> { values = value_to_append :: vs.values }) vss
-
-let rec enumerate_signals = function
-  | 0 -> [ { values = [] } ]
-  | w ->
-      let smaller = enumerate_signals (w - 1) in
-      List.concat_map (prepend_value_to_elements smaller) value_list
-
-let rec enumerate_combinations = function
-  | [] -> [ [] ]
-  | xs :: yss ->
-      let smaller = enumerate_combinations yss in
-      List.concat_map (fun x -> List.map (fun ys -> x :: ys) smaller) xs
-
-let enumerate_inputs wss =
-  List.map enumerate_signals wss |> enumerate_combinations
