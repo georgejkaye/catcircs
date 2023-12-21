@@ -1,41 +1,48 @@
 open Values
+open Primitive
 module IntSet = Set.Make (Int)
 
 type 'a binop = { symbol : string; bin : 'a -> 'a -> 'a }
+
+let make_binop sym fn = { symbol = sym; bin = fn }
+
 type 'a unop = { symbol : string; un : 'a -> 'a }
 
-type 'a expression =
-  | Constant of 'a
+let make_unop sym fn = { symbol = sym; un = fn }
+
+type ('v, 'p) expression =
+  | Constant of 'v
   | Variable of int
-  | UnOp of 'a unop * 'a expression
-  | BinOp of 'a binop * 'a expression * 'a expression
+  | Op of 'p * ('v, 'p) expression array * int
 
-module type VExp = sig
+module type VPExp = sig
   type v
+  type p
 
-  val string_of_expression : v expression -> string
-  val get_vars : v expression -> IntSet.t
-  val eval : (int, v) Hashtbl.t -> v expression -> v
+  val string_of_expression : (v, p) expression -> string
+  val get_vars : (v, p) expression -> IntSet.t
+  val eval : (int, v) Hashtbl.t -> (v, p) expression -> v
 end
 
-module ExtendExp (V : V) : VExp with type v := V.v = struct
+module ExtendExp (V : V) (P : P with type v := V.v) :
+  VPExp with type v := V.v and type p := P.p = struct
   let rec string_of_expression exp =
     match exp with
     | Constant v -> V.string_of_value v
     | Variable i -> "v" ^ string_of_int i
-    | UnOp (op, e) -> op.symbol ^ string_of_expression e
-    | BinOp (op, l, r) ->
-        string_of_expression l ^ " " ^ op.symbol ^ string_of_expression r
+    | Op (op, exps, i) ->
+        let exp_strings = Core.Array.map ~f:string_of_expression exps in
+        P.applied_string_of_primitive op exp_strings i
 
   let get_vars exp =
     let rec get_vars' acc exp =
       match exp with
       | Constant _ -> acc
       | Variable i -> IntSet.add i acc
-      | UnOp (_, e) -> get_vars' acc e
-      | BinOp (_, l, r) ->
-          let acc' = get_vars' acc l in
-          get_vars' acc' r
+      | Op (_, exps, _) ->
+          Core.Array.fold ~init:acc
+            ~f:(fun acc cur -> IntSet.union acc (get_vars' acc cur))
+            exps
     in
     get_vars' IntSet.empty exp
 
@@ -43,6 +50,7 @@ module ExtendExp (V : V) : VExp with type v := V.v = struct
     match exp with
     | Constant a -> a
     | Variable i -> Hashtbl.find assgs i
-    | UnOp (op, e) -> op.un (eval assgs e)
-    | BinOp (op, l, r) -> op.bin (eval assgs l) (eval assgs r)
+    | Op (op, exps, i) ->
+        let eval_exps = Core.Array.map ~f:(eval assgs) exps in
+        (P.fn_of_primitive op eval_exps).(i)
 end

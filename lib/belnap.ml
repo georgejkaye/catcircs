@@ -1,5 +1,5 @@
 open Values
-open Expression
+open Primitive
 
 type belnap = Bottom | False | True | Top
 [@@deriving enumerate, sexp, compare]
@@ -21,13 +21,7 @@ end
 
 module BelnapSet = ExtendSet (Belnap)
 
-let string_of_belnap_bools = function
-  | Bottom -> "00"
-  | False -> "01"
-  | True -> "10"
-  | Top -> "11"
-
-let fork v = (v, v)
+type gate = And | Or | Not [@@deriving enumerate, sexp, compare]
 
 let join_fn x y =
   match (x, y) with
@@ -39,8 +33,6 @@ let join_fn x y =
   | False, True -> Top
   | True, True -> True
   | False, False -> False
-
-let join_op = { symbol = "⊔"; fn = join_fn }
 
 let and_fn x y =
   match (x, y) with
@@ -69,3 +61,39 @@ let not_fn = function
   | True -> False
   | False -> True
   | Top -> Top
+
+module BelnapGate : P = struct
+  type v = belnap
+  type p = gate
+
+  let all_of_p = all_of_gate
+  let sexp_of_p = sexp_of_gate
+  let p_of_sexp = gate_of_sexp
+  let compare_p = compare_gate
+  let string_of_primitive = function And -> "AND" | Or -> "OR" | Not -> "NOT"
+  let arity_of_primitive = function And -> 2 | Or -> 2 | Not -> 1
+  let coarity_of_primitive _ = 1
+
+  let applied_string_of_primitive p ss _ =
+    let symbol = match p with And -> "∧" | Or -> "∨" | Not -> "¬" in
+    match p with
+    | Not ->
+        let arg = ss.(0) in
+        let lbracket, rbracket =
+          if String.contains arg ' ' then ("(", ")") else ("", "")
+        in
+        symbol ^ lbracket ^ arg ^ rbracket
+    | _ ->
+        let lhs = ss.(0) in
+        let rhs = ss.(1) in
+        lhs ^ " " ^ symbol ^ " " ^ rhs
+
+  let fn_of_primitive p vs =
+    let output =
+      match p with
+      | And -> and_fn vs.(0) vs.(1)
+      | Or -> or_fn vs.(0) vs.(1)
+      | Not -> not_fn vs.(0)
+    in
+    [| output |]
+end
