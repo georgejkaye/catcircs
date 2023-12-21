@@ -1,4 +1,6 @@
 (library
  (public_name catcircs)
  (name catcircs)
- (libraries core))
+ (libraries core)
+ (preprocess
+  (pps ppx_jane)))

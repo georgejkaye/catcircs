@@ -1,6 +1,6 @@
 open Values
 
-type belnap = Bottom | False | True | Top
+type belnap = Bottom | False | True | Top [@@deriving enumerate]
 
 module Belnap : V = struct
   type v = belnap
@@ -11,14 +11,8 @@ module Belnap : V = struct
     | True -> "t"
     | Top -> "⊤"
 
-  let values = [ Bottom; False; True; Top ]
+  let values = all_of_belnap
 end
-
-(* let belnap_values =
-   List.fold_left
-     (fun acc cur -> Set.add cur acc)
-     BelnapSet.empty
-     [ Bottom; False; True; Top ] *)
 
 let string_of_belnap_bools = function
   | Bottom -> "00"
