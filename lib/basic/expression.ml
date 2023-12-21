@@ -2,14 +2,6 @@ open Value
 open Primitive
 module IntSet = Set.Make (Int)
 
-type 'a binop = { symbol : string; bin : 'a -> 'a -> 'a }
-
-let make_binop sym fn = { symbol = sym; bin = fn }
-
-type 'a unop = { symbol : string; un : 'a -> 'a }
-
-let make_unop sym fn = { symbol = sym; un = fn }
-
 type ('v, 'p) expression =
   | Constant of 'v
   | Variable of int
@@ -19,7 +11,6 @@ module type VPExp = sig
   type v
   type p
 
-  val make_const : v -> (v, p) expression
   val string_of_expression : (v, p) expression -> string
   val get_vars : (v, p) expression -> IntSet.t
   val eval : (int, v) Hashtbl.t -> (v, p) expression -> v
