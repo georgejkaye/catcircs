@@ -5,8 +5,6 @@ module type Value = sig
   type v [@@deriving enumerate, sexp, compare]
 
   val string_of_value : v -> string
-  val join : v -> v -> v
-  val meet : v -> v -> v
 end
 
 type 'a signal = { values : 'a array }
