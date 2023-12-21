@@ -1,18 +1,25 @@
 open Values
+open Expression
 
-type belnap = Bottom | False | True | Top [@@deriving enumerate]
+type belnap = Bottom | False | True | Top
+[@@deriving enumerate, sexp, compare]
 
 module Belnap : V = struct
   type v = belnap
+
+  let all_of_v = all_of_belnap
+  let sexp_of_v = sexp_of_belnap
+  let v_of_sexp = belnap_of_sexp
+  let compare_v = compare_belnap
 
   let string_of_value = function
     | Bottom -> "⊥"
     | False -> "f"
     | True -> "t"
     | Top -> "⊤"
-
-  let values = all_of_belnap
 end
+
+module BelnapSet = ExtendSet (Belnap)
 
 let string_of_belnap_bools = function
   | Bottom -> "00"
@@ -32,6 +39,8 @@ let join_fn x y =
   | False, True -> Top
   | True, True -> True
   | False, False -> False
+
+let join_op = { symbol = "⊔"; fn = join_fn }
 
 let and_fn x y =
   match (x, y) with
