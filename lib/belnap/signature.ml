@@ -59,6 +59,22 @@ module BelnapValue : Value with type v = belnap = struct
   let sexp_of_v = sexp_of_belnap
   let v_of_sexp = belnap_of_sexp
   let compare_v = compare_belnap
+
+  let join v w =
+    match (v, w) with
+    | Bottom, w -> w
+    | v, Bottom -> v
+    | True, True -> True
+    | False, False -> False
+    | _, _ -> Top
+
+  let meet v w =
+    match (v, w) with
+    | Top, w -> w
+    | v, Top -> v
+    | True, True -> True
+    | False, False -> False
+    | _, _ -> Bottom
 end
 
 module BelnapGate : Primitive with type v = belnap and type p = gate = struct
