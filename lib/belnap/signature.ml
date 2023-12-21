@@ -1,6 +1,6 @@
-open Value
-open Primitive
-open Expression
+open Basic.Value
+open Basic.Primitive
+open Basic.Expression
 
 type belnap = Bottom | False | True | Top
 [@@deriving enumerate, sexp, compare]

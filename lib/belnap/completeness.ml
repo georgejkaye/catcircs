@@ -1,5 +1,5 @@
-open Belnap
-open Table
+open Signature
+open Basic.Table
 
 let get_dnf_clause to_bool conj conj_init row vs =
   Array.fold_left
