@@ -1,4 +1,4 @@
-open Sig
+open Value
 open Base
 open Printer
 open Inout
@@ -21,7 +21,7 @@ module type VCirc = sig
     (v signal array -> v signal array) -> int list -> int list -> v circuit
 end
 
-module ExtendCircuit (V : Sig) : VCirc with type v := V.v = struct
+module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
   module VString = ExtendString (V)
   module VEnum = ExtendEnum (V)
   module VInOut = ExtendInOut (V)

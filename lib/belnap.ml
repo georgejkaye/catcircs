@@ -1,4 +1,5 @@
-open Sig
+open Value
+open Primitive
 open Expression
 
 type belnap = Bottom | False | True | Top
@@ -45,7 +46,7 @@ let not_fn = function
   | False -> True
   | Top -> Top
 
-module Belnap : Sig = struct
+module BelnapValue : Value with type v = belnap = struct
   type v = belnap
 
   let string_of_value = function
@@ -58,7 +59,10 @@ module Belnap : Sig = struct
   let sexp_of_v = sexp_of_belnap
   let v_of_sexp = belnap_of_sexp
   let compare_v = compare_belnap
+end
 
+module BelnapGate : Primitive with type v = belnap and type p = gate = struct
+  type v = belnap
   type p = gate
 
   let all_of_p = all_of_gate
@@ -93,4 +97,5 @@ module Belnap : Sig = struct
     [| output |]
 end
 
-module BelnapExpression = ExtendExp (Belnap)
+module BelnapString = ExtendString (BelnapValue)
+module BelnapExpression = ExtendExp (BelnapValue) (BelnapGate)

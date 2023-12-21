@@ -1,4 +1,4 @@
-open Sig
+open Value
 open Base
 open Printer
 
@@ -15,7 +15,9 @@ module type VInOut = sig
   val string_of_io_cmp_list : v io_cmp list -> string
 end
 
-module ExtendInOut (V : Sig) : VInOut with type v := V.v = struct
+module ExtendInOut (V : Value) : VInOut with type v = V.v = struct
+  type v = V.v
+
   module VString = ExtendString (V)
 
   let string_of_io io =
