@@ -12,7 +12,7 @@ module type VTable = sig
   val string_of_table : v tablemany -> string
 end
 
-module ExtendVTable (V : Value) : VTable with type v = V.v = struct
+module ExtendTable (V : Value) : VTable with type v = V.v = struct
   type v = V.v
 
   let string_of_row_segment =
