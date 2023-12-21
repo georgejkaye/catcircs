@@ -1,10 +1,18 @@
 open Printer
 open Core
 
-module type V = sig
+module type Sig = sig
   type v [@@deriving enumerate, sexp, compare]
 
   val string_of_value : v -> string
+
+  type p [@@deriving enumerate, sexp, compare]
+
+  val string_of_primitive : p -> string
+  val arity_of_primitive : p -> int
+  val coarity_of_primitive : p -> int
+  val applied_string_of_primitive : p -> string array -> int -> string
+  val fn_of_primitive : p -> v array -> v array
 end
 
 type 'a signal = { values : 'a array }
@@ -17,7 +25,7 @@ module type VString = sig
   val string_of_signal_array : v signal array -> string
 end
 
-module ExtendString (V : V) : VString with type v := V.v = struct
+module ExtendString (V : Sig) : VString with type v := V.v = struct
   let string_of_signal s =
     if phys_equal (Array.length s.values) 0 then "ε"
     else
@@ -28,7 +36,7 @@ module ExtendString (V : V) : VString with type v := V.v = struct
   let string_of_signal_array ss = string_of_array string_of_signal ss
 end
 
-module ExtendSet (V : V) = Set.Make (struct
+module ExtendSet (V : Sig) = Set.Make (struct
   type t = V.v
 
   let compare = V.compare_v
@@ -43,7 +51,7 @@ module type VEnum = sig
   val enumerate_inputs : int list -> v signal array list
 end
 
-module ExtendEnum (V : V) : VEnum with type v := V.v = struct
+module ExtendEnum (V : Sig) : VEnum with type v := V.v = struct
   let prepend_value_to_elements value_to_append =
     List.map ~f:(fun vs ->
         { values = List.to_array (value_to_append :: List.of_array vs.values) })

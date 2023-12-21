@@ -1,5 +1,4 @@
-open Values
-open Primitive
+open Sig
 module IntSet = Set.Make (Int)
 
 type 'a binop = { symbol : string; bin : 'a -> 'a -> 'a }
@@ -24,15 +23,17 @@ module type VPExp = sig
   val eval : (int, v) Hashtbl.t -> (v, p) expression -> v
 end
 
-module ExtendExp (V : V) (P : P with type v := V.v) :
-  VPExp with type v := V.v and type p := P.p = struct
+module ExtendExp (V : Sig) : VPExp with type v := V.v and type p := V.p = struct
+  (* type v = V.v
+     type p = P.p *)
+
   let rec string_of_expression exp =
     match exp with
     | Constant v -> V.string_of_value v
     | Variable i -> "v" ^ string_of_int i
     | Op (op, exps, i) ->
         let exp_strings = Core.Array.map ~f:string_of_expression exps in
-        P.applied_string_of_primitive op exp_strings i
+        V.applied_string_of_primitive op exp_strings i
 
   let get_vars exp =
     let rec get_vars' acc exp =
@@ -52,5 +53,5 @@ module ExtendExp (V : V) (P : P with type v := V.v) :
     | Variable i -> Hashtbl.find assgs i
     | Op (op, exps, i) ->
         let eval_exps = Core.Array.map ~f:(eval assgs) exps in
-        (P.fn_of_primitive op eval_exps).(i)
+        (V.fn_of_primitive op eval_exps).(i)
 end

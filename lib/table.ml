@@ -1,5 +1,5 @@
 open Printer
-open Values
+open Sig
 
 type 'a row = 'a array * 'a array
 type 'a tablemany = { inputs : int; outputs : int; tablem : 'a row array }
@@ -12,7 +12,7 @@ module type VTable = sig
   val string_of_table : v tablemany -> string
 end
 
-module ExtendVTable (V : V) : VTable with type v := V.v = struct
+module ExtendVTable (V : Sig) : VTable with type v := V.v = struct
   let string_of_row_segment =
     string_of_array V.string_of_value ~delim:" " ~opening:"" ~closing:""
 

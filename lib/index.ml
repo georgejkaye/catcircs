@@ -1,9 +1,9 @@
-open Values
+open Sig
 open Circuits
 open Inout
 open Expression
 
-module VFuncs (V : V) = struct
+module VPFuncs (V : Sig) = struct
   include ExtendString (V)
   include ExtendEnum (V)
   include ExtendSet (V)

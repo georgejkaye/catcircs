@@ -1,25 +1,8 @@
-open Values
-open Primitive
+open Sig
+open Expression
 
 type belnap = Bottom | False | True | Top
 [@@deriving enumerate, sexp, compare]
-
-module Belnap : V = struct
-  type v = belnap
-
-  let all_of_v = all_of_belnap
-  let sexp_of_v = sexp_of_belnap
-  let v_of_sexp = belnap_of_sexp
-  let compare_v = compare_belnap
-
-  let string_of_value = function
-    | Bottom -> "⊥"
-    | False -> "f"
-    | True -> "t"
-    | Top -> "⊤"
-end
-
-module BelnapSet = ExtendSet (Belnap)
 
 type gate = And | Or | Not [@@deriving enumerate, sexp, compare]
 
@@ -62,8 +45,20 @@ let not_fn = function
   | False -> True
   | Top -> Top
 
-module BelnapGate : P = struct
+module Belnap : Sig = struct
   type v = belnap
+
+  let string_of_value = function
+    | Bottom -> "⊥"
+    | False -> "f"
+    | True -> "t"
+    | Top -> "⊤"
+
+  let all_of_v = all_of_belnap
+  let sexp_of_v = sexp_of_belnap
+  let v_of_sexp = belnap_of_sexp
+  let compare_v = compare_belnap
+
   type p = gate
 
   let all_of_p = all_of_gate
@@ -97,3 +92,5 @@ module BelnapGate : P = struct
     in
     [| output |]
 end
+
+module BelnapExpression = ExtendExp (Belnap)
