@@ -1,4 +1,5 @@
 open Value
+open Lattice
 open Primitive
 open Expression
 
@@ -59,7 +60,9 @@ module BelnapValue : Value with type v = belnap = struct
   let sexp_of_v = sexp_of_belnap
   let v_of_sexp = belnap_of_sexp
   let compare_v = compare_belnap
+end
 
+module BelnapLattice : Lattice with type v := belnap = struct
   let join v w =
     match (v, w) with
     | Bottom, w -> w

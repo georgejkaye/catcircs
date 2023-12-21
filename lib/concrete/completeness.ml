@@ -1,4 +1,4 @@
-open Signature
+open Belnap
 open Table
 
 let get_dnf_clause to_bool conj conj_init row vs =
