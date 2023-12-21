@@ -21,15 +21,13 @@ module ExtendExp (V : Value) (P : Primitive with type v = V.v) :
   type v = V.v
   type p = P.p
 
-  let make_const v = Constant v
-
   let rec string_of_expression exp =
     match exp with
     | Constant v -> V.string_of_value v
     | Variable i -> "v" ^ string_of_int i
     | Op (op, exps, i) ->
         let exp_strings = Core.Array.map ~f:string_of_expression exps in
-        P.applied_string_of_primitive op exp_strings i
+        "(" ^ P.applied_string_of_primitive op exp_strings i ^ ")"
 
   let get_vars exp =
     let rec get_vars' acc exp =
