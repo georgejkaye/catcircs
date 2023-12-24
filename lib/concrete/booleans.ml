@@ -69,12 +69,12 @@ module DNF : MonotoneNF with type v = boolval and type p = boolgate = struct
   type v = boolval
   type p = boolgate
 
-  let row_unit = F
-  let row_high = T
-  let row_op = Bor
-  let col_unit = T
-  let col_high = T
-  let col_op = Band
+  let y_unit = F
+  let y_high = T
+  let y_op = Bor
+  let x_unit = T
+  let x_high = T
+  let x_op = Band
 end
 
-module DNFMaker = ExtendMonotoneNF (DNF)
+module DNFMaker = ExtendMonotoneNF (BoolVal) (DNF)
