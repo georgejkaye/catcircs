@@ -1,17 +1,13 @@
 open Value
-open Base
 open Printer
 
-type 'a io_cmp = {
-  input : 'a signal array;
-  lhs : 'a signal array;
-  rhs : 'a signal array;
-}
+type 'a io_cmp = { input : 'a signal array; outputs : 'a signal array array }
 
 module type VInOut = sig
   type v
 
-  val string_of_io : v io_cmp -> string
+  val all_equal : v io_cmp -> bool
+  val string_of_io_cmp : v io_cmp -> string
   val string_of_io_cmp_list : v io_cmp list -> string
 end
 
@@ -20,14 +16,22 @@ module ExtendInOut (V : Value) : VInOut with type v = V.v = struct
 
   module VString = ExtendString (V)
 
-  let string_of_io io =
+  let all_equal io =
+    List.fold_left
+      (fun acc i ->
+        let l = VString.string_of_signal_array io.outputs.(i) in
+        let r = VString.string_of_signal_array io.outputs.(0) in
+        acc && String.equal l r)
+      true
+      (List.init (Array.length io.outputs - 1) (fun i -> i + 1))
+
+  let string_of_io_cmp io =
     VString.string_of_signal_array io.input
     ^ " || "
-    ^ VString.string_of_signal_array io.lhs
-    ^ " | "
-    ^ VString.string_of_signal_array io.rhs
-    ^ if Array.equal phys_equal io.lhs io.rhs then "  O" else "  X "
+    ^ Printer.string_of_array VString.string_of_signal_array ~delim:" | "
+        ~opening:"" ~closing:"" io.outputs
+    ^ if all_equal io then "  O" else "  X"
 
   let string_of_io_cmp_list =
-    string_of_list string_of_io ~delim:"\n" ~opening:"" ~closing:""
+    string_of_list string_of_io_cmp ~delim:"\n" ~opening:"" ~closing:""
 end

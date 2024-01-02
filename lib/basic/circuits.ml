@@ -31,7 +31,7 @@ module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
     |> List.map ~f:(fun ss ->
            let lhs = c1.fn ss in
            let rhs = c2.fn ss in
-           { input = ss; lhs; rhs })
+           { input = ss; outputs = [| lhs; rhs |] })
 
   let string_of_outputs c =
     let inputs = VEnum.enumerate_inputs c.arity in
@@ -53,7 +53,13 @@ module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
     List.rev
       (List.fold_left ~init:[]
          ~f:(fun acc io ->
-           if Array.equal phys_equal io.lhs io.rhs then acc else io :: acc)
+           if
+             Array.fold
+               ~f:(fun acc cur ->
+                 acc && Array.equal phys_equal io.outputs.(0) cur)
+               ~init:true io.outputs
+           then acc
+           else io :: acc)
          ios)
 
   let string_of_comparison c1 c2 =
@@ -61,7 +67,7 @@ module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
     let row_length =
       List.fold_left ~init:0 ~f:max
         (List.map
-           ~f:(fun cmp -> VInOut.string_of_io cmp |> String.length)
+           ~f:(fun cmp -> VInOut.string_of_io_cmp cmp |> String.length)
            comparison)
     in
     let equals_lines = String.init row_length ~f:(fun _ -> '=') in
