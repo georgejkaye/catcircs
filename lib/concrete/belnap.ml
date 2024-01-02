@@ -2,6 +2,7 @@ open Value
 open Lattice
 open Primitive
 open Expression
+open Circuits
 
 type belnap = Bottom | False | True | Top
 [@@deriving enumerate, sexp, compare]
@@ -46,6 +47,52 @@ let not_fn = function
   | True -> False
   | False -> True
   | Top -> Top
+
+let explode x =
+  let f_l = and_fn Bottom x in
+  let f_r = not_fn (or_fn Bottom x) in
+  let t_l = not_fn (and_fn Bottom x) in
+  let t_r = or_fn Bottom x in
+  (f_l, f_r, t_l, t_r)
+
+let explodes xs =
+  let each_explode = Array.map explode xs in
+  let len = Array.length xs in
+  Array.init (len * 4) (fun i ->
+      let a, b, c, d = each_explode.(i mod len) in
+      let index = i / len in
+      if index == 0 then a
+      else if index == 1 then b
+      else if index == 2 then c
+      else d)
+
+let reexplode l r = [| l; not_fn r; not_fn l; r |]
+
+let wrap_explode fn xs =
+  let exps = explodes xs in
+  let outs = fn exps in
+  [| join_fn outs.(0) outs.(3) |]
+
+let exp_concat xs ys =
+  let fl1, fr1, tl1, tr1 = xs in
+  let fl2, fr2, tl2, tr2 = ys in
+  (fl1, fr1, tl1, tr1, fl2, fr2, tl2, tr2)
+
+let exp_id_fn xs =
+  let fl, _, _, tr = xs in
+  reexplode fl tr
+
+let exp_not_fn xs = reexplode xs.(1) xs.(2)
+
+let exp_and_fn xs =
+  let f_and = and_fn xs.(0) xs.(1) in
+  let t_and = and_fn xs.(6) xs.(7) in
+  reexplode f_and t_and
+
+let exp_or_fn xs =
+  let f_or = or_fn xs.(0) xs.(1) in
+  let t_or = or_fn xs.(6) xs.(7) in
+  reexplode f_or t_or
 
 module BelnapValue : Value with type v = belnap = struct
   type v = belnap
@@ -118,3 +165,5 @@ end
 
 module BelnapString = ExtendString (BelnapValue)
 module BelnapExpression = ExtendExp (BelnapValue) (BelnapGate)
+module BelnapCircuit = ExtendCircuit (BelnapValue)
+module BelnapInOut = Inout.ExtendInOut (BelnapValue)
