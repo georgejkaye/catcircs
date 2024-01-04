@@ -30,7 +30,10 @@ module ExtendInOut (V : Value) : VInOut with type v = V.v = struct
     ^ " || "
     ^ Printer.string_of_array VString.string_of_signal_array ~delim:" | "
         ~opening:"" ~closing:"" io.outputs
-    ^ if all_equal io then "  O" else "  X"
+    ^
+    if Array.length io.outputs < 2 then ""
+    else if all_equal io then "  O"
+    else "  X"
 
   let string_of_io_cmp_list =
     string_of_list string_of_io_cmp ~delim:"\n" ~opening:"" ~closing:""
