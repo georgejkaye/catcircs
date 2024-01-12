@@ -81,3 +81,58 @@ module DNF : MonotoneNF with type v = boolval and type p = boolgate = struct
 end
 
 module DNFMaker = ExtendMonotoneNF (BoolVal) (DNF)
+
+module type MonotoneBoolSim = sig
+  type v
+  type p
+
+  val high : v
+  val low : v
+  val and_op : p
+  val or_op : p
+end
+
+module type VMonotoneBoolMaker = sig
+  type v
+  type p
+
+  val get_exp_for_function_input :
+    (int -> (v, p) expression) -> v array -> (v, p) expression
+
+  val get_exp_for_function :
+    (int -> (v, p) expression) -> (v array -> v) -> int -> (v, p) expression
+end
+
+module ExtendMonotoneBoolMaker
+    (S : MonotoneBoolSim)
+    (V : Value with type v = S.v) :
+  VMonotoneBoolMaker with type v := S.v and type p := S.p = struct
+  module VEnum = ExtendEnum (V)
+  module VString = ExtendString (V)
+
+  let get_exp_for_function_input var_fn vs =
+    Array.fold_left
+      (fun (acc, i) v ->
+        let next =
+          if Core.phys_equal v S.high then Op (S.and_op, [| acc; var_fn i |], 0)
+          else acc
+        in
+        (next, i + 1))
+      (Constant S.high, 0) vs
+    |> fst
+
+  let get_exp_for_function var_fn fn m =
+    let inputs = BoolEnum.enumerate_value_arrays m in
+    let v_inputs =
+      List.map (Array.map (function T -> S.high | F -> S.low)) inputs
+    in
+
+    List.fold_left
+      (fun acc vs ->
+        let output = fn vs in
+        if not (Core.phys_equal output S.high) then acc
+        else
+          let clause = get_exp_for_function_input var_fn vs in
+          Op (S.or_op, [| acc; clause |], 0))
+      (Constant S.low) v_inputs
+end
