@@ -17,6 +17,9 @@ module BoolVal : Value with type v = boolval = struct
   let v_of_sexp = boolval_of_sexp
 end
 
+module BoolEnum = ExtendEnum (BoolVal)
+module BoolString = ExtendString (BoolVal)
+
 let band_fn x y = match (x, y) with F, _ -> F | _, F -> F | T, T -> T
 let bor_fn x y = match (x, y) with T, _ -> T | _, T -> T | F, F -> F
 let bnot_fn x = match x with T -> F | F -> T
