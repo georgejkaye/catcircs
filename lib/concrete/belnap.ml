@@ -7,7 +7,7 @@ open Circuits
 type belnap = Bottom | False | True | Top
 [@@deriving enumerate, sexp, compare]
 
-type gate = And | Or | Not [@@deriving enumerate, sexp, compare]
+type gate = And | Or | Not | Join [@@deriving enumerate, sexp, compare]
 
 let join_fn x y =
   match (x, y) with
@@ -89,12 +89,20 @@ module BelnapGate : Primitive with type v = belnap and type p = gate = struct
   let sexp_of_p = sexp_of_gate
   let p_of_sexp = gate_of_sexp
   let compare_p = compare_gate
-  let string_of_primitive = function And -> "AND" | Or -> "OR" | Not -> "NOT"
-  let arity_of_primitive = function And -> 2 | Or -> 2 | Not -> 1
+
+  let string_of_primitive = function
+    | And -> "AND"
+    | Or -> "OR"
+    | Not -> "NOT"
+    | Join -> "JOIN"
+
+  let arity_of_primitive = function And -> 2 | Or -> 2 | Not -> 1 | Join -> 2
   let coarity_of_primitive _ = 1
 
   let applied_string_of_primitive p ss _ =
-    let symbol = match p with And -> "∧" | Or -> "∨" | Not -> "¬" in
+    let symbol =
+      match p with And -> "∧" | Or -> "∨" | Not -> "¬" | Join -> "⊔"
+    in
     match p with
     | Not ->
         let arg = ss.(0) in
@@ -113,6 +121,7 @@ module BelnapGate : Primitive with type v = belnap and type p = gate = struct
       | And -> and_fn vs.(0) vs.(1)
       | Or -> or_fn vs.(0) vs.(1)
       | Not -> not_fn vs.(0)
+      | Join -> join_fn vs.(0) vs.(1)
     in
     [| output |]
 end
