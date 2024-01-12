@@ -1,4 +1,3 @@
-open Normal
 open Value
 open Primitive
 open Table
@@ -67,20 +66,6 @@ end
 
 module BoolTable = ExtendTable (BoolVal)
 module BoolExp = ExtendExp (BoolVal) (BoolGate)
-
-module DNF : MonotoneNF with type v = boolval and type p = boolgate = struct
-  type v = boolval
-  type p = boolgate
-
-  let y_unit = F
-  let y_high = T
-  let y_op = Bor
-  let x_unit = T
-  let x_high = T
-  let x_op = Band
-end
-
-module DNFMaker = ExtendMonotoneNF (BoolVal) (DNF)
 
 module type MonotoneBoolSim = sig
   type v
