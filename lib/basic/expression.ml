@@ -49,3 +49,14 @@ module ExtendExp (V : Value) (P : Primitive with type v = V.v) :
         let eval_exps = Core.Array.map ~f:(eval assgs) exps in
         (P.fn_of_primitive op eval_exps).(i)
 end
+
+let setup_assgs assgs =
+  let ctx = Hashtbl.create (Array.length assgs) in
+  let _ =
+    Array.fold_left
+      (fun i cur ->
+        Hashtbl.add ctx i cur;
+        i + 1)
+      0 assgs
+  in
+  ctx
