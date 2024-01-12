@@ -9,6 +9,11 @@ type 'a circuit = {
   coarity : int list;
 }
 
+let get_value_fn circ vs =
+  Array.map ~f:(fun v -> { values = [| v |] }) vs
+  |> circ.fn
+  |> Array.map ~f:(fun v -> v.values.(0))
+
 module type VCirc = sig
   type v
 
