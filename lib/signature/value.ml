@@ -41,22 +41,31 @@ end)
 module type VEnum = sig
   type v
 
+  val enumerate_value_arrays : int -> v array list
   val enumerate_signals : int -> v signal list
   val enumerate_inputs : int list -> v signal array list
 end
 
 module ExtendEnum (V : Value) : VEnum with type v := V.v = struct
-  let prepend_value_to_elements value_to_append =
-    List.map ~f:(fun vs ->
-        { values = List.to_array (value_to_append :: List.of_array vs.values) })
+  let prepend_value_to_signals elems value_to_append =
+    List.map
+      ~f:(fun vs -> { values = Array.append [| value_to_append |] vs.values })
+      elems
+
+  let prepend_value_to_elements elems value_to_append =
+    List.map ~f:(fun vs -> Array.append [| value_to_append |] vs) elems
+
+  let rec enumerate_value_arrays = function
+    | 0 -> [ [||] ]
+    | w ->
+        let smaller = enumerate_value_arrays (w - 1) in
+        List.concat_map ~f:(prepend_value_to_elements smaller) V.all_of_v
 
   let rec enumerate_signals = function
     | 0 -> [ { values = [||] } ]
     | w ->
         let smaller = enumerate_signals (w - 1) in
-        List.concat_map
-          ~f:(fun x -> prepend_value_to_elements x smaller)
-          V.all_of_v
+        List.concat_map ~f:(prepend_value_to_signals smaller) V.all_of_v
 
   let rec enumerate_combinations = function
     | [] -> [ [] ]
