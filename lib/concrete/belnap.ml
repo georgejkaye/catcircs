@@ -63,7 +63,9 @@ module BelnapValue : Value with type v = belnap = struct
   let compare_v = compare_belnap
 end
 
-module BelnapLattice : Lattice with type v := belnap = struct
+module BelnapLattice : Lattice with type v = belnap = struct
+  type v = belnap
+
   let join v w =
     match (v, w) with
     | Bottom, w -> w
@@ -129,6 +131,7 @@ end
 module BelnapString = ExtendString (BelnapValue)
 module BelnapExpression = ExtendExp (BelnapValue) (BelnapGate)
 module BelnapCircuit = ExtendCircuit (BelnapValue)
+module BelnapLatticeCircuit = ExtendLatticeCircuit (BelnapValue) (BelnapLattice)
 module BelnapInOut = Inout.ExtendInOut (BelnapValue)
 
 let explode x =
