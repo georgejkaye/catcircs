@@ -9,6 +9,8 @@ end
 
 type 'a signal = { values : 'a array }
 
+let signal_length xs = Array.length xs.values
+
 module type VString = sig
   type v
 
