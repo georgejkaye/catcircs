@@ -2,6 +2,7 @@ open Value
 open Base
 open Printer
 open Inout
+open Lattice
 
 type 'a circuit = {
   fn : 'a signal array -> 'a signal array;
@@ -104,4 +105,37 @@ module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
     }
 
   let make_circuit_signals fn ar coar = { fn; arity = ar; coarity = coar }
+end
+
+module type VLatticeCirc = sig
+  type v
+
+  val is_monotone : v circuit -> bool
+end
+
+module ExtendLatticeCircuit (V : Value) (L : Lattice with type v = V.v) :
+  VLatticeCirc with type v = V.v = struct
+  type v = V.v
+
+  module VEnum = ExtendEnum (V)
+  module VCircuit = ExtendCircuit (V)
+  module VLattice = ExtendLattice (V) (L)
+
+  let is_monotone circ =
+    let inputs = VEnum.enumerate_inputs circ.arity in
+    let is_monotone_for_fixed_input fixed_input =
+      let fixed_output = circ.fn fixed_input in
+      List.fold_left
+        ~f:(fun acc cur ->
+          acc
+          &&
+          if not (VLattice.leq_inputs fixed_input cur) then true
+          else
+            let output2 = circ.fn cur in
+            VLattice.leq_inputs fixed_output output2)
+        ~init:true inputs
+    in
+    List.fold_left
+      ~f:(fun acc1 cur1 -> acc1 && is_monotone_for_fixed_input cur1)
+      ~init:true inputs
 end
