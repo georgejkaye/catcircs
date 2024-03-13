@@ -17,6 +17,7 @@ module type VString = sig
   val string_of_signal : v signal -> string
   val string_of_value_array : v array -> string
   val string_of_signal_array : v signal array -> string
+  val string_of_signal_array_list : v signal array list -> string
 end
 
 module ExtendString (V : Value) : VString with type v = V.v = struct
@@ -30,6 +31,9 @@ module ExtendString (V : Value) : VString with type v = V.v = struct
 
   let string_of_value_array vs = string_of_array V.string_of_value vs
   let string_of_signal_array ss = string_of_array string_of_signal ss
+
+  let string_of_signal_array_list sss =
+    string_of_list string_of_signal_array sss
 end
 
 module ExtendSet (V : Value) = Set.Make (struct

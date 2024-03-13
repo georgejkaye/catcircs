@@ -133,6 +133,7 @@ module BelnapExpression = ExtendExp (BelnapValue) (BelnapGate)
 module BelnapCircuit = ExtendCircuit (BelnapValue)
 module BelnapLatticeCircuit = ExtendLatticeCircuit (BelnapValue) (BelnapLattice)
 module BelnapInOut = Inout.ExtendInOut (BelnapValue)
+module BelnapBisim = Bisim.ExtendBisim (BelnapValue)
 
 let explode x =
   let f_l = and_fn Bottom x in

@@ -20,6 +20,10 @@ module type VCirc = sig
 
   val test : v circuit -> v io_cmp list
   val compare : v circuit -> v circuit -> v io_cmp list
+
+  val compare_with :
+    v circuit -> v circuit -> v signal array list -> v io_cmp list
+
   val string_of_outputs : v circuit -> string
   val string_of_comparison : v circuit -> v circuit -> string
   val make_circuit_values : (v array -> v array) -> int -> int -> v circuit
@@ -39,12 +43,13 @@ module ExtendCircuit (V : Value) : VCirc with type v := V.v = struct
            let out = c1.fn ss in
            { input = ss; outputs = [| out |] })
 
-  let compare c1 c2 =
-    VEnum.enumerate_inputs c1.arity
-    |> List.map ~f:(fun ss ->
-           let lhs = c1.fn ss in
-           let rhs = c2.fn ss in
-           { input = ss; outputs = [| lhs; rhs |] })
+  let compare_with c1 c2 =
+    List.map ~f:(fun ss ->
+        let lhs = c1.fn ss in
+        let rhs = c2.fn ss in
+        { input = ss; outputs = [| lhs; rhs |] })
+
+  let compare c1 c2 = VEnum.enumerate_inputs c1.arity |> compare_with c1 c2
 
   let string_of_outputs c =
     let inputs = VEnum.enumerate_inputs c.arity in
