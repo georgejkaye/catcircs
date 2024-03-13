@@ -131,6 +131,7 @@ end
 module BelnapString = ExtendString (BelnapValue)
 module BelnapExpression = ExtendExp (BelnapValue) (BelnapGate)
 module BelnapCircuit = ExtendCircuit (BelnapValue)
+module BelnapLatticeDerived = ExtendLattice (BelnapValue) (BelnapLattice)
 module BelnapLatticeCircuit = ExtendLatticeCircuit (BelnapValue) (BelnapLattice)
 module BelnapInOut = Inout.ExtendInOut (BelnapValue)
 module BelnapBisim = Bisim.ExtendBisim (BelnapValue)

@@ -11,6 +11,17 @@ type 'a signal = { values : 'a array }
 
 let signal_length xs = Array.length xs.values
 
+let signal_is_all v signal =
+  Array.fold
+    ~f:(fun acc cur -> acc && Core.phys_equal cur v)
+    ~init:true signal.values
+
+let input_is_all v =
+  Array.fold ~f:(fun acc cur -> acc && signal_is_all v cur) ~init:true
+
+let make_signal_of_all v i = { values = Array.init i ~f:(fun _ -> v) }
+let make_signal_array_of_all v = Array.map ~f:(make_signal_of_all v)
+
 module type VString = sig
   type v
 
@@ -50,6 +61,7 @@ module type VEnum = sig
   val enumerate_value_arrays : int -> v array list
   val enumerate_signals : int -> v signal list
   val enumerate_inputs : int list -> v signal array list
+  val widths_from_inputs : v signal array -> int list
 end
 
 module ExtendEnum (V : Value) : VEnum with type v := V.v = struct
@@ -83,4 +95,7 @@ module ExtendEnum (V : Value) : VEnum with type v := V.v = struct
     let inputs = List.map ~f:enumerate_signals wss in
     let combs = enumerate_combinations inputs in
     List.map ~f:List.to_array combs
+
+  let widths_from_inputs wss =
+    Array.to_list (Array.map ~f:(fun ws -> Array.length ws.values) wss)
 end

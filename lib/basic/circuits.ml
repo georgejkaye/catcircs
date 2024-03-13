@@ -116,6 +116,12 @@ module type VLatticeCirc = sig
   type v
 
   val is_monotone : v circuit -> bool
+
+  val monotone_completion :
+    (v signal array -> v signal array option) ->
+    int array ->
+    v signal array ->
+    v signal array
 end
 
 module ExtendLatticeCircuit (V : Value) (L : Lattice with type v = V.v) :
@@ -143,4 +149,19 @@ module ExtendLatticeCircuit (V : Value) (L : Lattice with type v = V.v) :
     List.fold_left
       ~f:(fun acc1 cur1 -> acc1 && is_monotone_for_fixed_input cur1)
       ~init:true inputs
+
+  let rec monotone_completion f outputs vs =
+    match f vs with
+    | Some ws -> ws
+    | None ->
+        if input_is_all VLattice.bot vs then
+          make_signal_array_of_all VLattice.bot outputs
+        else
+          let lowers = VLattice.all_less_than vs in
+          List.fold_left
+            ~f:(fun acc cur ->
+              let lower_f = monotone_completion f outputs cur in
+              VLattice.join_inputs acc lower_f)
+            ~init:(make_signal_array_of_all VLattice.bot outputs)
+            lowers
 end
