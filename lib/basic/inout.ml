@@ -43,7 +43,7 @@ module ExtendInOut (V : Value) : VInOut with type v = V.v = struct
     List.fold_left (fun acc cur -> acc && some_equal indices cur) true
 
   let all_equal io =
-    some_equal (List.init (Array.length io.outputs - 1) (fun i -> i + 1)) io
+    some_equal (List.init (Array.length io.outputs - 1) (fun i -> i)) io
 
   let all_of_list_equal =
     List.fold_left (fun acc cur -> acc && all_equal cur) true
