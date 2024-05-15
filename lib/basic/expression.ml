@@ -104,7 +104,7 @@ module ExtendExp (V : Value) (P : Primitive with type v = V.v) :
           let label =
             match cur.ntype with
             | CNode v -> V.string_of_value v
-            | VNode i -> "v" ^ string_of_int i
+            | VNode i -> "var" ^ string_of_int i
             | ONode (op, _) -> P.string_of_primitive op
             | OutNode -> "output"
           in
@@ -118,7 +118,7 @@ module ExtendExp (V : Value) (P : Primitive with type v = V.v) :
         ""
     in
     let edge_string = edges_to_dot edges in
-    "digraph G {" ^ node_string ^ edge_string ^ "\n}"
+    "digraph G {\nrankdir=LR\nranksep=5" ^ node_string ^ edge_string ^ "\n}"
 end
 
 let setup_assgs assgs =
